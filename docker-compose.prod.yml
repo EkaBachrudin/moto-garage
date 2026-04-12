@@ -1,0 +1,76 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: moto-garage-postgres-prod
+    environment:
+      POSTGRES_USER: ${DB_USER:-moto_garage}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-moto_garage}
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+    networks:
+      - moto-garage-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-moto_garage}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  # Backend API
+  backend:
+    build:
+      context: ./moto-garage-be
+      target: production
+    container_name: moto-garage-backend-prod
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-moto_garage}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME:-moto_garage}
+    networks:
+      - moto-garage-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: always
+
+  # Frontend (served by nginx)
+  frontend:
+    build:
+      context: ./moto-garage-fe
+      target: production
+    container_name: moto-garage-frontend-prod
+    networks:
+      - moto-garage-network
+    restart: always
+
+  # Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: moto-garage-nginx-prod
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/production/nginx.conf:/etc/nginx/nginx.conf:ro
+      # Uncomment for SSL certificates
+      # - ./certs:/etc/nginx/certs:ro
+    networks:
+      - moto-garage-network
+    depends_on:
+      - frontend
+      - backend
+    restart: always
+
+volumes:
+  postgres_prod_data:
+    driver: local
+
+networks:
+  moto-garage-network:
+    driver: bridge

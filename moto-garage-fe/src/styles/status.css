@@ -1,0 +1,197 @@
+/* ==================== Service Status Badge ==================== */
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+/* Menunggu Antrian */
+.status-badge.menunggu {
+  background-color: var(--status-menunggu-bg);
+  color: var(--status-menunggu-text);
+}
+
+.status-badge.menunggu .status-dot {
+  background-color: var(--status-menunggu-text);
+}
+
+/* Pengecekan */
+.status-badge.pengecekan {
+  background-color: var(--status-pengecekan-bg);
+  color: var(--status-pengecekan-text);
+}
+
+.status-badge.pengecekan .status-dot {
+  background-color: var(--status-pengecekan-text);
+}
+
+/* Sedang Dikerjakan */
+.status-badge.dikerjakan {
+  background-color: var(--status-dikerjakan-bg);
+  color: var(--status-dikerjakan-text);
+}
+
+.status-badge.dikerjakan .status-dot {
+  background-color: var(--status-dikerjakan-text);
+}
+
+/* Konfirmasi Part */
+.status-badge.konfirmasi {
+  background-color: var(--status-konfirmasi-bg);
+  color: var(--status-konfirmasi-text);
+}
+
+.status-badge.konfirmasi .status-dot {
+  background-color: var(--status-konfirmasi-text);
+}
+
+/* Menunggu Sparepart */
+.status-badge.menunggu-part {
+  background-color: var(--status-menunggu-part-bg);
+  color: var(--status-menunggu-part-text);
+}
+
+.status-badge.menunggu-part .status-dot {
+  background-color: var(--status-menunggu-part-text);
+}
+
+/* Selesai */
+.status-badge.selesai {
+  background-color: var(--status-selesai-bg);
+  color: var(--status-selesai-text);
+}
+
+.status-badge.selesai .status-dot {
+  background-color: var(--status-selesai-text);
+}
+
+/* ==================== Status Dot ==================== */
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+}
+
+/* ==================== Payment Status ==================== */
+
+.payment-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+.payment-status-badge.lunas {
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.payment-status-badge.lunas .status-dot {
+  background-color: var(--color-success);
+}
+
+.payment-status-badge.belum-lunas {
+  background-color: var(--color-error-light);
+  color: var(--color-error);
+}
+
+.payment-status-badge.belum-lunas .status-dot {
+  background-color: var(--color-error);
+}
+
+/* ==================== Entry Type Badge ==================== */
+
+.entry-type-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+}
+
+.entry-type-badge.booking {
+  background-color: var(--color-info-light);
+  color: var(--color-info);
+}
+
+.entry-type-badge.walk-in {
+  background-color: var(--color-gray-200);
+  color: var(--color-gray-700);
+}
+
+/* ==================== Stock Status ==================== */
+
+.stock-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.stock-status.normal {
+  color: var(--color-success);
+}
+
+.stock-status.low {
+  color: var(--color-warning);
+}
+
+.stock-status.critical {
+  color: var(--color-error);
+}
+
+.stock-badge {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-full);
+  background-color: var(--color-gray-100);
+}
+
+.stock-badge.low {
+  background-color: var(--color-warning-light);
+  color: var(--color-warning);
+}
+
+.stock-badge.critical {
+  background-color: var(--color-error-light);
+  color: var(--color-error);
+}
+
+/* ==================== Category Badge ==================== */
+
+.category-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+}
+
+.category-badge.sparepart {
+  background-color: var(--color-info-light);
+  color: var(--color-info);
+}
+
+.category-badge.aksesoris {
+  background-color: var(--color-accent);
+  color: var(--color-white);
+}
