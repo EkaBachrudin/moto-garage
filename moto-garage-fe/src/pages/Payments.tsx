@@ -28,19 +28,19 @@ const columns: Column<Payment>[] = [
   {
     key: 'total_bill',
     title: 'Total Tagihan',
-    render: (_, record) => `Rp ${record.total_bill.toLocaleString('id-ID')}`
+    render: (_, record) => `Rp ${(record.total_bill || 0).toLocaleString('id-ID')}`
   },
   {
     key: 'dp_amount',
     title: 'DP',
-    render: (_, record) => record.dp_amount > 0 ? `Rp ${record.dp_amount.toLocaleString('id-ID')}` : '-'
+    render: (_, record) => (record.dp_amount || 0) > 0 ? `Rp ${(record.dp_amount || 0).toLocaleString('id-ID')}` : '-'
   },
   {
     key: 'remaining_amount',
     title: 'Sisa',
     render: (_, record) => (
-      <span style={{ color: record.remaining_amount > 0 ? 'var(--color-error)' : 'var(--color-success)' }}>
-        Rp {record.remaining_amount.toLocaleString('id-ID')}
+      <span style={{ color: (record.remaining_amount || 0) > 0 ? 'var(--color-error)' : 'var(--color-success)' }}>
+        Rp {(record.remaining_amount || 0).toLocaleString('id-ID')}
       </span>
     )
   },
@@ -57,7 +57,7 @@ const columns: Column<Payment>[] = [
   {
     key: 'payment_date',
     title: 'Tanggal',
-    render: (_, record) => new Date(record.payment_date).toLocaleDateString('id-ID')
+    render: (_, record) => record.payment_date ? new Date(record.payment_date).toLocaleDateString('id-ID') : '-'
   }
 ]
 
@@ -81,7 +81,7 @@ export function PaymentsList() {
     }
   }
 
-  const totalOmzet = payments.reduce((sum, p) => sum + p.total_bill, 0)
+  const totalOmzet = payments.reduce((sum, p) => sum + (p?.total_bill || 0), 0)
   const totalLaba = Math.round(totalOmzet * 0.4) // Simplified calculation
 
   return (

@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { orderService, paymentService } from '@/services'
 import type { ServiceOrder, OrderDetail } from '@/types'
 import { ServiceStatus, PaymentStatus, OrderDetailType } from '@/types'
-import { StatusBadge, Modal, Button, Textarea, Card } from '@/components/ui'
+import { StatusBadge, Modal, Button, Textarea, Card, Select } from '@/components/ui'
 
 export function OrderDetail() {
   const { id } = useParams<{ id: string }>()

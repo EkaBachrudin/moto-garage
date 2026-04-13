@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Menu, Settings, LogOut, ChevronDown, Bell, Search } from 'lucide-react'
 
 export interface HeaderProps {
   onMenuClick?: () => void
@@ -8,6 +9,7 @@ export interface HeaderProps {
 
 export function Header({ onMenuClick, userName = 'User', userRole = 'Admin' }: HeaderProps) {
   const [showDropdown, setShowDropdown] = useState(false)
+  const initials = userName.charAt(0).toUpperCase()
 
   return (
     <header className="top-header">
@@ -15,117 +17,90 @@ export function Header({ onMenuClick, userName = 'User', userRole = 'Admin' }: H
         <button
           type="button"
           onClick={onMenuClick}
-          style={{
-            background: 'none',
-            border: 'none',
-            fontSize: '24px',
-            cursor: 'pointer',
-            padding: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: '4px',
-            color: 'var(--color-gray-700)'
-          }}
-          className="md:hidden"
+          className="menu-button"
+          aria-label="Toggle menu"
         >
-          ☰
+          <Menu size={24} strokeWidth={2} />
         </button>
-        <h1 style={{ fontSize: '18px', fontWeight: '600', margin: 0, color: 'var(--color-gray-900)' }}>
-          Sistem Manajemen Bengkel
-        </h1>
+        <div className="header-title-group">
+          <h1 className="header-title">Sistem Manajemen Bengkel</h1>
+          <span className="header-subtitle">Moto Garage Management System</span>
+        </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        {/* Search Bar */}
+        <div className="header-search">
+          <Search size={18} className="header-search-icon" />
+          <input
+            type="text"
+            placeholder="Cari..."
+            className="header-search-input"
+          />
+        </div>
+
+        {/* Notifications */}
+        <button
+          type="button"
+          className="header-icon-button"
+          aria-label="Notifications"
+        >
+          <Bell size={20} strokeWidth={2} />
+          <span className="notification-badge" />
+        </button>
+
+        {/* User Menu */}
         <div style={{ position: 'relative' }}>
           <button
             type="button"
             onClick={() => setShowDropdown(!showDropdown)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '8px 12px',
-              border: '1px solid var(--color-gray-200)',
-              borderRadius: '8px',
-              background: 'var(--color-white)',
-              cursor: 'pointer',
-              fontSize: '14px',
-              color: 'var(--color-gray-700)'
-            }}
+            className="user-menu-button"
           >
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              background: 'var(--color-primary)',
-              color: 'var(--color-white)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: '600',
-              fontSize: '14px'
-            }}>
-              {userName.charAt(0).toUpperCase()}
+            <div className="user-avatar">
+              {initials}
             </div>
-            <div style={{ textAlign: 'left', marginLeft: '8px' }}>
-              <div style={{ fontWeight: '500', lineHeight: '1.2' }}>{userName}</div>
-              <div style={{ fontSize: '12px', color: 'var(--color-gray-500)' }}>{userRole}</div>
+            <div className="user-info">
+              <div className="user-name">{userName}</div>
+              <div className="user-role">{userRole}</div>
             </div>
+            <ChevronDown size={16} className="dropdown-chevron" />
           </button>
 
           {showDropdown && (
             <>
               <div
-                style={{
-                  position: 'fixed',
-                  inset: 0,
-                  zIndex: 1040
-                }}
+                className="dropdown-backdrop"
                 onClick={() => setShowDropdown(false)}
               />
-              <div style={{
-                position: 'absolute',
-                top: '100%',
-                right: 0,
-                marginTop: '8px',
-                minWidth: '200px',
-                background: 'var(--color-white)',
-                border: '1px solid var(--color-gray-200)',
-                borderRadius: '8px',
-                boxShadow: 'var(--shadow-lg)',
-                zIndex: 1050,
-                overflow: 'hidden'
-              }}>
-                <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--color-gray-100)' }}>
-                  <div style={{ fontWeight: '600', fontSize: '14px' }}>{userName}</div>
-                  <div style={{ fontSize: '12px', color: 'var(--color-gray-500)' }}>{userRole}</div>
+              <div className="dropdown-menu">
+                <div className="dropdown-header">
+                  <div className="dropdown-user-name">{userName}</div>
+                  <div className="dropdown-user-role">{userRole}</div>
                 </div>
-                <div style={{ padding: '4px 0' }}>
-                  <a
-                    href="/settings"
-                    style={{
-                      display: 'block',
-                      padding: '10px 16px',
-                      textDecoration: 'none',
-                      color: 'var(--color-gray-700)',
-                      fontSize: '14px'
+                <div className="dropdown-divider" />
+                <div className="dropdown-content">
+                  <button
+                    type="button"
+                    className="dropdown-item"
+                    onClick={() => {
+                      window.location.href = '/settings'
+                      setShowDropdown(false)
                     }}
                   >
-                    ⚙️ Pengaturan
-                  </a>
-                  <a
-                    href="/logout"
-                    style={{
-                      display: 'block',
-                      padding: '10px 16px',
-                      textDecoration: 'none',
-                      color: 'var(--color-error)',
-                      fontSize: '14px'
+                    <Settings size={16} strokeWidth={2} />
+                    <span>Pengaturan</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="dropdown-item dropdown-item-danger"
+                    onClick={() => {
+                      window.location.href = '/logout'
+                      setShowDropdown(false)
                     }}
                   >
-                    🚪 Keluar
-                  </a>
+                    <LogOut size={16} strokeWidth={2} />
+                    <span>Keluar</span>
+                  </button>
                 </div>
               </div>
             </>

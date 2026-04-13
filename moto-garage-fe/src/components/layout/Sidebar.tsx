@@ -1,21 +1,33 @@
 import { NavLink, useLocation } from 'react-router-dom'
 import { UserRole } from '@/types'
+import {
+  LayoutDashboard,
+  Wrench,
+  Users,
+  Package,
+  CreditCard,
+  BarChart3,
+  UserCog,
+  LogOut,
+  Menu,
+  X
+} from 'lucide-react'
 
 export interface MenuItem {
   path: string
   label: string
-  icon?: string
+  icon: React.ElementType
   roles?: UserRole[]
 }
 
 const menuItems: MenuItem[] = [
-  { path: '/dashboard', label: 'Dashboard', icon: '📊' },
-  { path: '/orders', label: 'Servis', icon: '🔧' },
-  { path: '/customers', label: 'Pelanggan', icon: '👥' },
-  { path: '/inventory', label: 'Inventaris', icon: '📦' },
-  { path: '/payments', label: 'Pembayaran', icon: '💳' },
-  { path: '/reports', label: 'Laporan', icon: '📈', roles: [UserRole.ADMIN, UserRole.KASIR] },
-  { path: '/mechanic', label: 'Tugas Saya', icon: '👨‍🔧', roles: [UserRole.MEKANIK] },
+  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/orders', label: 'Servis', icon: Wrench },
+  { path: '/customers', label: 'Pelanggan', icon: Users },
+  { path: '/inventory', label: 'Inventaris', icon: Package },
+  { path: '/payments', label: 'Pembayaran', icon: CreditCard },
+  { path: '/reports', label: 'Laporan', icon: BarChart3, roles: [UserRole.ADMIN, UserRole.KASIR] },
+  { path: '/mechanic', label: 'Tugas Saya', icon: UserCog, roles: [UserRole.MEKANIK] },
 ]
 
 export interface SidebarProps {
@@ -35,16 +47,33 @@ export function Sidebar({ isOpen = true, onClose, userRole }: SidebarProps) {
   return (
     <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
       <div className="sidebar-header">
-        <h2 style={{ fontSize: '20px', fontWeight: 'bold', margin: 0, color: 'var(--color-white)' }}>
-          🏍️ Moto Garage
-        </h2>
+        <div className="sidebar-logo">
+          <div className="sidebar-logo-icon">
+            <Wrench size={24} strokeWidth={2} />
+          </div>
+          <div className="sidebar-logo-text">
+            <span className="sidebar-logo-title">Moto Garage</span>
+            <span className="sidebar-logo-subtitle">Management System</span>
+          </div>
+        </div>
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="sidebar-close"
+            aria-label="Close menu"
+          >
+            <X size={20} strokeWidth={2} />
+          </button>
+        )}
       </div>
 
       <nav className="sidebar-nav">
         <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-          {filteredItems.map((item) => {
+          {filteredItems.map((item, index) => {
             const isActive = location.pathname === item.path ||
               (item.path !== '/' && location.pathname.startsWith(item.path))
+            const Icon = item.icon
 
             return (
               <li key={item.path} style={{ marginBottom: '4px' }}>
@@ -57,17 +86,21 @@ export function Sidebar({ isOpen = true, onClose, userRole }: SidebarProps) {
                     alignItems: 'center',
                     gap: '12px',
                     padding: '12px 16px',
-                    borderRadius: '8px',
+                    borderRadius: '12px',
                     textDecoration: 'none',
-                    color: isActive || isNavActive ? 'var(--color-white)' : 'var(--color-gray-400)',
-                    backgroundColor: isActive || isNavActive ? 'var(--color-gray-800)' : 'transparent',
-                    transition: 'all 0.15s ease',
+                    color: isActive || isNavActive ? 'var(--color-white)' : 'rgba(255, 255, 255, 0.7)',
+                    backgroundColor: isActive || isNavActive
+                      ? 'linear-gradient(135deg, rgba(99, 102, 241, 0.3) 0%, rgba(139, 92, 246, 0.2) 100%)'
+                      : 'transparent',
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                     fontSize: '14px',
-                    fontWeight: '500'
+                    fontWeight: '500',
+                    border: isActive || isNavActive ? '1px solid rgba(99, 102, 241, 0.3)' : '1px solid transparent',
+                    animationDelay: `${index * 50}ms`
                   })}
                   end={item.path === '/dashboard'}
                 >
-                  {item.icon && <span style={{ fontSize: '18px' }}>{item.icon}</span>}
+                  <Icon size={18} strokeWidth={2} style={{ flexShrink: 0 }} />
                   <span>{item.label}</span>
                 </NavLink>
               </li>
@@ -80,19 +113,30 @@ export function Sidebar({ isOpen = true, onClose, userRole }: SidebarProps) {
         <NavLink
           to="/logout"
           onClick={onClose}
+          className="sidebar-logout"
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: '12px',
             padding: '12px 16px',
-            borderRadius: '8px',
+            borderRadius: '12px',
             textDecoration: 'none',
-            color: 'var(--color-error)',
+            color: 'rgba(239, 68, 68, 0.8)',
             fontSize: '14px',
-            fontWeight: '500'
+            fontWeight: '500',
+            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+            border: '1px solid rgba(239, 68, 68, 0.2)'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.1)'
+            e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.3)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent'
+            e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.2)'
           }}
         >
-          <span>🚪</span>
+          <LogOut size={18} strokeWidth={2} />
           <span>Keluar</span>
         </NavLink>
       </div>

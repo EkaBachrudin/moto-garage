@@ -2,6 +2,16 @@ import { useEffect, useState } from 'react'
 import { reportService, orderService } from '@/services'
 import type { DashboardStats, ServiceOrder } from '@/types'
 import { ServiceStatus } from '@/types'
+import {
+  DollarSign,
+  TrendingUp,
+  Car,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  User,
+  Wrench
+} from 'lucide-react'
 import '@/styles/dashboard.css'
 
 export function Dashboard() {
@@ -43,49 +53,64 @@ export function Dashboard() {
     <div className="dashboard">
       {/* Stats Cards */}
       <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-icon primary">💰</div>
+        <div className="stat-card stat-card-primary animate-slide-up" style={{ animationDelay: '0ms' }}>
+          <div className="stat-icon stat-icon-primary">
+            <DollarSign size={24} strokeWidth={2.5} />
+          </div>
           <div className="stat-content">
             <div className="stat-label">Omzet Hari Ini</div>
             <div className="stat-value">Rp {stats.omzet.toLocaleString('id-ID')}</div>
-            <div className="stat-change positive">
-              {stats.completed_orders} unit selesai
+            <div className="stat-change stat-change-positive">
+              <CheckCircle2 size={12} strokeWidth={2.5} />
+              <span>{stats.completed_orders} unit selesai</span>
             </div>
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="stat-icon success">📈</div>
+        <div className="stat-card stat-card-success animate-slide-up" style={{ animationDelay: '50ms' }}>
+          <div className="stat-icon stat-icon-success">
+            <TrendingUp size={24} strokeWidth={2.5} />
+          </div>
           <div className="stat-content">
             <div className="stat-label">Laba Kotor</div>
             <div className="stat-value">Rp {stats.laba_kotor.toLocaleString('id-ID')}</div>
-            <div className="stat-change positive">
-              ~40% margin
+            <div className="stat-change stat-change-positive">
+              <TrendingUp size={12} strokeWidth={2.5} />
+              <span>~40% margin</span>
             </div>
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className="stat-icon info">🏍️</div>
+        <div className="stat-card stat-card-info animate-slide-up" style={{ animationDelay: '100ms' }}>
+          <div className="stat-icon stat-icon-info">
+            <Car size={24} strokeWidth={2.5} />
+          </div>
           <div className="stat-content">
             <div className="stat-label">Unit Entry</div>
             <div className="stat-value">{stats.unit_entry}</div>
-            <div className="stat-change">
-              {stats.pending_orders} sedang diproses
+            <div className="stat-change stat-change-neutral">
+              <Clock size={12} strokeWidth={2.5} />
+              <span>{stats.pending_orders} sedang diproses</span>
             </div>
           </div>
         </div>
 
-        <div className="stat-card">
-          <div className={`stat-icon ${stats.low_stock_count > 0 ? 'error' : 'success'}`}>
-            {stats.low_stock_count > 0 ? '⚠️' : '✓'}
+        <div className={`stat-card ${stats.low_stock_count > 0 ? 'stat-card-warning' : 'stat-card-success'} animate-slide-up`}
+             style={{ animationDelay: '150ms' }}>
+          <div className={`stat-icon ${stats.low_stock_count > 0 ? 'stat-icon-warning' : 'stat-icon-success'}`}>
+            {stats.low_stock_count > 0 ? (
+              <AlertTriangle size={24} strokeWidth={2.5} />
+            ) : (
+              <CheckCircle2 size={24} strokeWidth={2.5} />
+            )}
           </div>
           <div className="stat-content">
             <div className="stat-label">Stok Menipis</div>
             <div className="stat-value">{stats.low_stock_count}</div>
             {stats.low_stock_count > 0 && (
-              <div className="stat-change negative">
-                Perlu restock
+              <div className="stat-change stat-change-negative">
+                <AlertTriangle size={12} strokeWidth={2.5} />
+                <span>Perlu restock</span>
               </div>
             )}
           </div>
@@ -179,7 +204,8 @@ function KanbanCard({ order }: { order: ServiceOrder }) {
       </div>
       <div className="kanban-card-body">
         <div className="kanban-card-customer">
-          👤 {order.customer?.full_name || 'Unknown Customer'}
+          <User size={12} strokeWidth={2} />
+          <span>{order.customer?.full_name || 'Unknown Customer'}</span>
         </div>
         {order.complaint && (
           <div className="kanban-card-complaint">
@@ -189,7 +215,17 @@ function KanbanCard({ order }: { order: ServiceOrder }) {
       </div>
       <div className="kanban-card-footer">
         <div className="kanban-card-mechanic">
-          {order.mechanic ? `👨‍🔧 ${order.mechanic.full_name}` : '⏳ Belum ada mekanik'}
+          {order.mechanic ? (
+            <>
+              <Wrench size={12} strokeWidth={2} />
+              <span>{order.mechanic.full_name}</span>
+            </>
+          ) : (
+            <>
+              <Clock size={12} strokeWidth={2} />
+              <span>Belum ada mekanik</span>
+            </>
+          )}
         </div>
         <div className="kanban-card-time">
           {new Date(order.entry_date).toLocaleTimeString('id-ID', {

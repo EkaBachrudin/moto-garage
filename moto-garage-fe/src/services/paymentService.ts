@@ -63,7 +63,7 @@ class PaymentService {
 
     let payments = mockServiceOrders
       .map(o => o.payment)
-      .filter((p): p is Payment => p !== undefined)
+      .filter((p): p is Payment => p !== undefined && p !== null)
 
     if (params?.status) {
       payments = payments.filter(p => p.payment_status === params.status)
