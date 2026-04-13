@@ -1,15 +1,31 @@
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '@/store'
+import { useCanAccessRoute } from '@/hooks'
 import type { UserRole } from '@/types'
 
 export interface ProtectedRouteProps {
   children: React.ReactNode
   allowedRoles?: UserRole[]
+  fallback?: React.ReactNode
 }
 
-export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
-  const { isAuthenticated, user } = useAuthStore()
+export function ProtectedRoute({
+  children,
+  allowedRoles,
+  fallback
+}: ProtectedRouteProps) {
+  const { isAuthenticated, isLoading } = useAuthStore()
+  const canAccess = useCanAccessRoute(allowedRoles)
   const location = useLocation()
+
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="spinner" />
+      </div>
+    )
+  }
 
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
@@ -17,11 +33,23 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   }
 
   // Check role-based access
-  if (allowedRoles && user) {
-    const hasAccess = allowedRoles.includes(user.role?.name as UserRole)
-    if (!hasAccess) {
-      return <Navigate to="/dashboard" replace />
+  if (allowedRoles && allowedRoles.length > 0 && !canAccess) {
+    // Show fallback if provided
+    if (fallback) {
+      return <>{fallback}</>
     }
+
+    // Redirect to dashboard with access denied message
+    return (
+      <Navigate
+        to="/dashboard"
+        state={{
+          accessDenied: true,
+          message: 'You do not have permission to access this page.'
+        }}
+        replace
+      />
+    )
   }
 
   return <>{children}</>

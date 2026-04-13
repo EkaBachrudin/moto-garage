@@ -122,9 +122,21 @@ function Login() {
         </form>
 
         <div className="login-footer">
-          <p>
-            Demo: Gunakan email apa saja dengan password apa saja
-          </p>
+          <p>Demo Credentials:</p>
+          <div className="demo-credentials">
+            <div className="credential-item">
+              <span className="role-badge admin">Admin</span>
+              <code>admin@motogarage.com</code> / <code>Admin123!</code>
+            </div>
+            <div className="credential-item">
+              <span className="role-badge kasir">Kasir</span>
+              <code>kasir@motogarage.com</code> / <code>Kasir123!</code>
+            </div>
+            <div className="credential-item">
+              <span className="role-badge mekanik">Mekanik</span>
+              <code>mekanik@motogarage.com</code> / <code>Mekanik123!</code>
+            </div>
+          </div>
         </div>
       </div>
     </div>

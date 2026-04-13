@@ -1,11 +1,12 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { User, LoginRequest, LoginResponse } from '@/types'
+import type { User, LoginRequest } from '@/types'
+import { authService } from '@/services/authService'
+import { apiClient } from '@/services/api'
 
 interface AuthState {
   user: User | null
-  accessToken: string | null
-  refreshToken: string | null
+  csrfToken: string | null
   isAuthenticated: boolean
   isLoading: boolean
   error: string | null
@@ -13,17 +14,17 @@ interface AuthState {
   // Actions
   login: (credentials: LoginRequest) => Promise<void>
   logout: () => Promise<void>
-  refreshAccessToken: () => Promise<void>
+  refreshSession: () => Promise<void>
   setUser: (user: User | null) => void
   clearError: () => void
+  checkAuth: () => Promise<boolean>
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       user: null,
-      accessToken: null,
-      refreshToken: null,
+      csrfToken: null,
       isAuthenticated: false,
       isLoading: false,
       error: null,
@@ -31,45 +32,21 @@ export const useAuthStore = create<AuthState>()(
       login: async (credentials: LoginRequest) => {
         set({ isLoading: true, error: null })
         try {
-          // TODO: Replace with actual API call
-          // const response = await authService.login(credentials)
-          const mockResponse: LoginResponse = {
-            user: {
-              user_id: '1',
-              role_id: '1',
-              full_name: 'Admin User',
-              email: credentials.email,
-              phone: '628123456789',
-              commission_rate: 0,
-              is_active: true,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
-              role: {
-                role_id: '1',
-                name: 'admin',
-                description: 'Administrator',
-                permissions: {},
-                is_active: true,
-                created_at: new Date().toISOString()
-              }
-            },
-            access_token: 'mock_access_token',
-            refresh_token: 'mock_refresh_token'
-          }
+          const response = await authService.login(credentials)
 
           set({
-            user: mockResponse.user,
-            accessToken: mockResponse.access_token,
-            refreshToken: mockResponse.refresh_token,
+            user: response.user,
+            csrfToken: response.csrf_token,
             isAuthenticated: true,
             isLoading: false,
-            error: null
+            error: null,
           })
         } catch (error: any) {
           set({
             error: error.message || 'Login failed',
             isLoading: false,
-            isAuthenticated: false
+            isAuthenticated: false,
+            user: null,
           })
           throw error
         }
@@ -78,48 +55,59 @@ export const useAuthStore = create<AuthState>()(
       logout: async () => {
         set({ isLoading: true, error: null })
         try {
-          // TODO: Replace with actual API call
-          // await authService.logout()
+          await authService.logout()
 
           set({
             user: null,
-            accessToken: null,
-            refreshToken: null,
+            csrfToken: null,
             isAuthenticated: false,
             isLoading: false,
-            error: null
+            error: null,
           })
         } catch (error: any) {
+          // Clear local state even if API call fails
           set({
+            user: null,
+            csrfToken: null,
+            isAuthenticated: false,
+            isLoading: false,
             error: error.message || 'Logout failed',
-            isLoading: false
           })
-          throw error
         }
       },
 
-      refreshAccessToken: async () => {
-        const { refreshToken } = get()
-        if (!refreshToken) {
-          throw new Error('No refresh token available')
+      refreshSession: async () => {
+        // Prevent multiple refresh attempts
+        const state = get()
+        if (state.isLoading) {
+          return
         }
 
+        set({ isLoading: true })
+
+        // Tell API client we're refreshing
+        apiClient.setRefreshingState(true)
+
         try {
-          // TODO: Replace with actual API call
-          // const response = await authService.refreshToken(refreshToken)
+          const response = await authService.refreshToken()
 
           set({
-            accessToken: 'new_mock_access_token',
-            isLoading: false
+            csrfToken: response.csrf_token,
+            isLoading: false,
+            error: null,
           })
+
+          apiClient.setRefreshingState(false)
         } catch (error: any) {
-          // If refresh fails, logout user
+          apiClient.setRefreshingState(false)
+
+          // If refresh fails, clear auth state
           set({
             user: null,
-            accessToken: null,
-            refreshToken: null,
+            csrfToken: null,
             isAuthenticated: false,
-            error: error.message || 'Session expired'
+            isLoading: false,
+            error: error.message || 'Session expired',
           })
           throw error
         }
@@ -131,16 +119,35 @@ export const useAuthStore = create<AuthState>()(
 
       clearError: () => {
         set({ error: null })
-      }
+      },
+
+      checkAuth: async () => {
+        try {
+          const { user } = await authService.getCurrentUser()
+
+          set({
+            user,
+            isAuthenticated: true,
+            error: null,
+          })
+
+          return true
+        } catch (error) {
+          set({
+            user: null,
+            isAuthenticated: false,
+          })
+
+          return false
+        }
+      },
     }),
     {
       name: 'auth-storage',
       partialize: (state) => ({
         user: state.user,
-        accessToken: state.accessToken,
-        refreshToken: state.refreshToken,
-        isAuthenticated: state.isAuthenticated
-      })
+        isAuthenticated: state.isAuthenticated,
+      }),
     }
   )
 )

@@ -1,79 +1,83 @@
-import { apiClient, mockDelay } from './api'
-import type { LoginRequest, LoginResponse, User } from '@/types'
+import { apiClient } from './api'
+import type { LoginRequest, LoginResponse, User, UserSession } from '@/types'
+
+interface LoginApiResponse {
+  success: boolean
+  message: string
+  data: {
+    user: User
+    csrf_token: string
+  }
+}
+
+interface RefreshTokenResponse {
+  success: boolean
+  data: {
+    csrf_token: string
+  }
+}
+
+interface MeApiResponse {
+  success: boolean
+  data: {
+    user: User
+    session: UserSession
+  }
+}
 
 class AuthService {
+  /**
+   * Login with email and password
+   * Uses HTTP-only cookies for token storage
+   */
   async login(credentials: LoginRequest): Promise<LoginResponse> {
-    await mockDelay(500)
+    const response = await apiClient.post<LoginApiResponse>('/auth/login', {
+      email: credentials.email.toLowerCase(),
+      password: credentials.password,
+    })
 
-    // Mock login - accept any email/password for demo
-    // In production, this would call the actual API
-    if (credentials.email && credentials.password) {
-      const mockResponse: LoginResponse = {
-        user: {
-          user_id: 'u1',
-          role_id: 'r1',
-          full_name: 'Admin User',
-          email: credentials.email,
-          phone: '628123456789',
-          commission_rate: 0,
-          is_active: true,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          role: {
-            role_id: 'r1',
-            name: 'admin',
-            description: 'Administrator',
-            permissions: {},
-            is_active: true,
-            created_at: new Date().toISOString()
-          }
-        },
-        access_token: 'mock_access_token_' + Date.now(),
-        refresh_token: 'mock_refresh_token_' + Date.now()
-      }
-      return mockResponse
+    if (!response.success) {
+      throw new Error(response.message || 'Login failed')
     }
 
-    throw new Error('Invalid credentials')
-  }
-
-  async logout(): Promise<void> {
-    await mockDelay(300)
-    // In production, this would call the actual API
-    return Promise.resolve()
-  }
-
-  async refreshToken(refreshToken: string): Promise<{ access_token: string }> {
-    await mockDelay(300)
-    // In production, this would call the actual API
     return {
-      access_token: 'new_mock_access_token_' + Date.now()
+      user: response.data.user,
+      csrf_token: response.data.csrf_token,
     }
   }
 
-  async getCurrentUser(): Promise<User> {
-    await mockDelay(300)
-    // In production, this would call the actual API
-    const mockUser: User = {
-      user_id: 'u1',
-      role_id: 'r1',
-      full_name: 'Admin User',
-      email: 'admin@example.com',
-      phone: '628123456789',
-      commission_rate: 0,
-      is_active: true,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      role: {
-        role_id: 'r1',
-        name: 'admin',
-        description: 'Administrator',
-        permissions: {},
-        is_active: true,
-        created_at: new Date().toISOString()
-      }
-    }
-    return mockUser
+  /**
+   * Logout current session
+   * Clears HTTP-only cookies
+   */
+  async logout(): Promise<void> {
+    await apiClient.post<{ success: boolean; message: string }>('/auth/logout')
+  }
+
+  /**
+   * Refresh access token using refresh token from HTTP-only cookie
+   */
+  async refreshToken(): Promise<{ csrf_token: string }> {
+    const response = await apiClient.post<RefreshTokenResponse>('/auth/refresh')
+    return response.data
+  }
+
+  /**
+   * Get current user session info
+   */
+  async getCurrentUser(): Promise<{ user: User; session: UserSession }> {
+    const response = await apiClient.get<MeApiResponse>('/auth/me')
+    return response.data
+  }
+
+  /**
+   * Revoke all sessions for current user
+   */
+  async revokeAllSessions(): Promise<{ revoked_count: number }> {
+    const response = await apiClient.post<{ success: boolean; message: string; data: { revoked_count: number } }>(
+      '/auth/revoke-all'
+    )
+    return response.data
   }
 }
 

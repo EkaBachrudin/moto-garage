@@ -158,6 +158,29 @@ CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON user_sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_expires_at ON user_sessions(expires_at);
 CREATE INDEX IF NOT EXISTS idx_sessions_active ON user_sessions(user_id) WHERE is_active = true;
+
+-- Single Device Login Function: Deactivate existing sessions when creating new one
+CREATE OR REPLACE FUNCTION enforce_single_device_login()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Deactivate all existing active sessions for this user
+  UPDATE user_sessions
+  SET is_active = false
+  WHERE user_id = NEW.user_id
+    AND is_active = true
+    AND session_id IS DISTINCT FROM NEW.session_id;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger to enforce single device login
+DROP TRIGGER IF EXISTS enforce_single_device_login_trigger ON user_sessions;
+CREATE TRIGGER enforce_single_device_login_trigger
+  BEFORE INSERT OR UPDATE OF is_active ON user_sessions
+  FOR EACH ROW
+  WHEN (NEW.is_active = true)
+  EXECUTE FUNCTION enforce_single_device_login();
 CREATE INDEX IF NOT EXISTS idx_revoked_jti ON revoked_tokens(jti);
 CREATE INDEX IF NOT EXISTS idx_revoked_expires_at ON revoked_tokens(expires_at);
 
@@ -245,13 +268,46 @@ INSERT INTO categories (name) VALUES
 ('Jasa Servis')
 ON CONFLICT DO NOTHING;
 
--- Insert default admin user (password: admin123)
--- Password hash is bcrypt hash of 'admin123'
-INSERT INTO users (role_id, full_name, email, password_hash, is_active)
+-- Insert default admin user
+-- Email: admin@motogarage.com
+-- Password: Admin123! (CHANGE THIS IN PRODUCTION!)
+-- Password hash is argon2id hash of 'Admin123!'
+INSERT INTO users (role_id, full_name, email, phone, password_hash, is_active)
 SELECT
   (SELECT role_id FROM roles WHERE name = 'admin'),
-  'Administrator',
+  'Super Admin',
   'admin@motogarage.com',
-  '$2b$10$rKZJJJ8JJ8JJ8JJ8JJ8JJ8JJ8JJ8JJ8JJ8JJ8JJ8JJ8JJ8JJ8JJ8JJ8',
+  '+6281234567890',
+  '$argon2id$v=19$m=65536,t=3,p=4$qxxAhZ/kxNreoe/6lv69Hw$2uOcNu+R/Pk7bYMvUPU0gkD3JPs6Ies11mdMIM8Mdzg',
+  true
+ON CONFLICT (email) DO NOTHING;
+
+-- Insert default kasir user
+-- Email: kasir@motogarage.com
+-- Password: Kasir123! (CHANGE THIS IN PRODUCTION!)
+-- Password hash is argon2id hash of 'Kasir123!'
+INSERT INTO users (role_id, full_name, email, phone, password_hash, commission_rate, is_active)
+SELECT
+  (SELECT role_id FROM roles WHERE name = 'kasir'),
+  'Kasir Bengkel',
+  'kasir@motogarage.com',
+  '+6281234567891',
+  '$argon2id$v=19$m=65536,t=3,p=4$7P2H3cGW0iz9u/roHoAfdA$H3+Cha0UAIWFpdIJNfesFdAxQCLBmHABkwLoBjxa6nw',
+  0.00,
+  true
+ON CONFLICT (email) DO NOTHING;
+
+-- Insert default mekanik user
+-- Email: mekanik@motogarage.com
+-- Password: Mekanik123! (CHANGE THIS IN PRODUCTION!)
+-- Password hash is argon2id hash of 'Mekanik123!'
+INSERT INTO users (role_id, full_name, email, phone, password_hash, commission_rate, is_active)
+SELECT
+  (SELECT role_id FROM roles WHERE name = 'mekanik'),
+  'Mekanik Bengkel',
+  'mekanik@motogarage.com',
+  '+6281234567892',
+  '$argon2id$v=19$m=65536,t=3,p=4$asYu0fePhQuEmR+OAnMBaA$BCiD3h0225twd4XRL8RqXkAbOcObhc1NfbZww7R/S4c',
+  5.00,
   true
 ON CONFLICT (email) DO NOTHING;
