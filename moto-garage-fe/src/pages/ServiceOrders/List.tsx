@@ -13,7 +13,7 @@ const columns: Column<ServiceOrder>[] = [
     title: 'Order ID',
     render: (_, record) => (
       <Link to={`/orders/${record.order_id}`} style={{ color: 'var(--color-primary)', textDecoration: 'none' }}>
-        {record.order_id}
+        {record.order_code}
       </Link>
     )
   },

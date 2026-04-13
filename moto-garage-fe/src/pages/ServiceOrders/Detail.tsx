@@ -86,7 +86,7 @@ export function OrderDetail() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-              <h1 className="page-title" style={{ margin: 0 }}>Order #{order.order_id}</h1>
+              <h1 className="page-title" style={{ margin: 0 }}>Order #{order.order_code}</h1>
               <StatusBadge status={order.status} />
               <span className={`entry-type-badge ${order.entry_type === 'Booking' ? 'booking' : 'walk-in'}`}>
                 {order.entry_type}

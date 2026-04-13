@@ -1,71 +1,61 @@
-import { mockCustomers } from '@/mocks'
+import { apiClient } from './api'
 import type { Customer, CreateCustomerForm } from '@/types'
+
+interface ApiResponse<T> {
+  success: boolean
+  message?: string
+  data: T
+  error_code?: string
+}
 
 class CustomerService {
   async getAllCustomers(search?: string): Promise<Customer[]> {
-    await new Promise(resolve => setTimeout(resolve, 300))
+    const params = search ? { search } : undefined
+    const response = await apiClient.get<ApiResponse<Customer[]>>('/customers', params)
 
-    let customers = [...mockCustomers]
-
-    if (search) {
-      const searchLower = search.toLowerCase()
-      customers = customers.filter(c =>
-        c.full_name.toLowerCase().includes(searchLower) ||
-        c.phone.includes(search) ||
-        c.address.toLowerCase().includes(searchLower)
-      )
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to fetch customers')
     }
 
-    return customers
+    return response.data
   }
 
   async getCustomerById(customerId: string): Promise<Customer> {
-    await new Promise(resolve => setTimeout(resolve, 200))
+    const response = await apiClient.get<ApiResponse<Customer>>(`/customers/${customerId}`)
 
-    const customer = mockCustomers.find(c => c.customer_id === customerId)
-    if (!customer) {
-      throw new Error('Customer not found')
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to fetch customer')
     }
-    return customer
+
+    return response.data
   }
 
   async createCustomer(data: CreateCustomerForm): Promise<Customer> {
-    await new Promise(resolve => setTimeout(resolve, 500))
+    const response = await apiClient.post<ApiResponse<Customer>>('/customers', data)
 
-    const newCustomer: Customer = {
-      customer_id: 'c' + (mockCustomers.length + 1),
-      full_name: data.full_name,
-      phone: data.phone,
-      address: data.address,
-      is_member: data.is_member,
-      created_at: new Date().toISOString()
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to create customer')
     }
 
-    mockCustomers.push(newCustomer)
-    return newCustomer
+    return response.data
   }
 
   async updateCustomer(customerId: string, data: Partial<CreateCustomerForm>): Promise<Customer> {
-    await new Promise(resolve => setTimeout(resolve, 400))
+    const response = await apiClient.put<ApiResponse<Customer>>(`/customers/${customerId}`, data)
 
-    const customer = mockCustomers.find(c => c.customer_id === customerId)
-    if (!customer) {
-      throw new Error('Customer not found')
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to update customer')
     }
 
-    Object.assign(customer, data)
-    return customer
+    return response.data
   }
 
   async deleteCustomer(customerId: string): Promise<void> {
-    await new Promise(resolve => setTimeout(resolve, 300))
+    const response = await apiClient.delete<ApiResponse<void>>(`/customers/${customerId}`)
 
-    const index = mockCustomers.findIndex(c => c.customer_id === customerId)
-    if (index === -1) {
-      throw new Error('Customer not found')
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to delete customer')
     }
-
-    mockCustomers.splice(index, 1)
   }
 }
 

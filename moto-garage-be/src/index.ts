@@ -35,8 +35,16 @@ app.get('/health', (req: Request, res: Response) => {
 
 // API Routes
 import authRoutes from './routes/auth.routes';
+import userRoutes from './routes/user.routes';
+import customerRoutes from './routes/customer.routes';
+import vehicleRoutes from './routes/vehicle.routes';
+import orderRoutes from './routes/order.routes';
 
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/customers', customerRoutes);
+app.use('/api/v1/vehicles', vehicleRoutes);
+app.use('/api/v1/orders', orderRoutes);
 
 // Start server
 app.listen(PORT, () => {

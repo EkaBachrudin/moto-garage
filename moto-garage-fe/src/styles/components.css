@@ -191,10 +191,6 @@
 
 /* ==================== Form Group ==================== */
 
-.form-group {
-  margin-bottom: var(--spacing-md);
-}
-
 .form-label {
   display: block;
   margin-bottom: var(--spacing-xs);
@@ -360,6 +356,36 @@
   height: 8px;
   border-radius: var(--radius-full);
   background-color: currentColor;
+}
+
+/* ==================== Order Code ==================== */
+
+.order-code {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+  color: var(--color-primary);
+  background-color: var(--color-primary-light);
+  border-radius: var(--radius-md);
+  letter-spacing: 0.05em;
+  user-select: all;
+}
+
+.order-code-copy {
+  margin-left: var(--spacing-xs);
+  color: var(--color-gray-500);
+  cursor: pointer;
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.order-code-copy:hover {
+  color: var(--color-primary);
+  background-color: var(--color-white);
 }
 
 /* ==================== Table ==================== */

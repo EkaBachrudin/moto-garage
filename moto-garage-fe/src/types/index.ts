@@ -6,7 +6,8 @@ export enum ServiceStatus {
   DIKERJAKAN = 'Sedang Dikerjakan',
   KONFIRMASI_PART = 'Konfirmasi Part',
   MENUNGGU_PART = 'Menunggu Sparepart',
-  SELESAI = 'Selesai'
+  SELESAI = 'Selesai',
+  BATAL = 'Batal'
 }
 
 export enum EntryType {
@@ -99,6 +100,10 @@ export interface Vehicle {
   plate_number: string
   brand_type: string
   customer?: Customer
+  can_order?: boolean
+  order_blocked_reason?: string | null
+  current_order_status?: string
+  active_order_id?: string | null
 }
 
 // ==================== SUPPLIER & PRODUCT ====================
@@ -135,6 +140,7 @@ export interface Product {
 
 export interface ServiceOrder {
   order_id: string
+  order_code: string
   customer_id: string
   vehicle_id: string
   mechanic_id: string

@@ -1,119 +1,174 @@
-import { mockServiceOrders, getOrdersByStatus, getOrdersByMechanic, getOrderByVehicle, getOrderById } from '@/mocks'
+import { apiClient } from './api'
 import type { ServiceOrder, CreateOrderForm } from '@/types'
 import { ServiceStatus } from '@/types'
 
+interface ApiResponse<T> {
+  success: boolean
+  message?: string
+  data: T
+  error_code?: string
+}
+
 class OrderService {
-  async getAllOrders(params?: { status?: ServiceStatus; mechanic_id?: string }): Promise<ServiceOrder[]> {
-    await new Promise(resolve => setTimeout(resolve, 300))
+  // Mapping between backend status and frontend ServiceStatus
+  private statusMap: Record<string, string> = {
+    'Antri': ServiceStatus.MENUNGGU_ANTRIAN,
+    'Pengecekan': ServiceStatus.PENGECEKAN,
+    'Dikerjakan': ServiceStatus.DIKERJAKAN,
+    'Konfirmasi Part': ServiceStatus.KONFIRMASI_PART,
+    'Menunggu Part': ServiceStatus.MENUNGGU_PART,
+    'Selesai': ServiceStatus.SELESAI,
+    'Batal': ServiceStatus.BATAL,
+  }
 
-    let orders = [...mockServiceOrders]
+  // Reverse mapping for API requests (frontend -> backend)
+  private reverseStatusMap: Record<string, string> = {
+    'Menunggu Antrian': 'Antri',
+    'Pengecekan': 'Pengecekan',
+    'Sedang Dikerjakan': 'Dikerjakan',
+    'Konfirmasi Part': 'Konfirmasi Part',
+    'Menunggu Sparepart': 'Menunggu Part',
+    'Selesai': 'Selesai',
+    'Batal': 'Batal',
+  }
 
-    if (params?.status) {
-      orders = orders.filter(o => o.status === params.status)
+  private normalizeStatus(status: string): string {
+    return this.statusMap[status] || status
+  }
+
+  private denormalizeStatus(status: string): string {
+    return this.reverseStatusMap[status] || status
+  }
+
+  async getAllOrders(params?: { status?: string; customer_id?: string }): Promise<ServiceOrder[]> {
+    // Map frontend status to backend status for API request
+    const apiParams = params?.status
+      ? { ...params, status: this.denormalizeStatus(params.status) }
+      : params
+
+    const response = await apiClient.get<ApiResponse<ServiceOrder[]>>('/orders', apiParams)
+
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to fetch orders')
     }
 
-    if (params?.mechanic_id) {
-      orders = orders.filter(o => o.mechanic_id === params.mechanic_id)
-    }
-
-    return orders
+    // Normalize status values from backend to match frontend enum
+    return response.data.map(order => ({
+      ...order,
+      status: this.normalizeStatus(order.status)
+    }))
   }
 
   async getOrderById(orderId: string): Promise<ServiceOrder> {
-    await new Promise(resolve => setTimeout(resolve, 200))
+    const response = await apiClient.get<ApiResponse<ServiceOrder>>(`/orders/${orderId}`)
 
-    const order = getOrderById(orderId)
-    if (!order) {
-      throw new Error('Order not found')
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to fetch order')
     }
-    return order
+
+    // Normalize status in response
+    return {
+      ...response.data,
+      status: this.normalizeStatus(response.data.status)
+    }
   }
 
   async createOrder(data: CreateOrderForm): Promise<ServiceOrder> {
-    await new Promise(resolve => setTimeout(resolve, 500))
+    const response = await apiClient.post<ApiResponse<ServiceOrder>>('/orders', data)
 
-    // Mock creating a new order
-    const newOrder: ServiceOrder = {
-      order_id: 'o' + (mockServiceOrders.length + 1),
-      customer_id: data.customer_id || '',
-      vehicle_id: data.vehicle_id || '',
-      mechanic_id: data.mechanic_ids[0] || null,
-      created_by: 'u1',
-      status: ServiceStatus.MENUNGGU_ANTRIAN,
-      entry_type: data.entry_type,
-      complaint: data.complaint,
-      diagnosis: '',
-      entry_date: new Date().toISOString(),
-      customer: undefined,
-      vehicle: undefined,
-      mechanic: undefined,
-      order_details: [],
-      payment: null
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to create order')
     }
 
-    mockServiceOrders.unshift(newOrder)
-    return newOrder
+    // Normalize status in response
+    return {
+      ...response.data,
+      status: this.normalizeStatus(response.data.status)
+    }
   }
 
-  async updateOrderStatus(orderId: string, status: ServiceStatus, diagnosis?: string): Promise<ServiceOrder> {
-    await new Promise(resolve => setTimeout(resolve, 300))
-
-    const order = getOrderById(orderId)
-    if (!order) {
-      throw new Error('Order not found')
-    }
-
-    order.status = status
+  async updateOrderStatus(orderId: string, status: string, diagnosis?: string): Promise<ServiceOrder> {
+    const updateData: any = { status: this.denormalizeStatus(status) }
     if (diagnosis !== undefined) {
-      order.diagnosis = diagnosis
+      updateData.diagnosis = diagnosis
     }
 
-    if (status === ServiceStatus.SELESAI) {
-      order.completion_date = new Date().toISOString()
+    const response = await apiClient.put<ApiResponse<ServiceOrder>>(`/orders/${orderId}`, updateData)
+
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to update order status')
     }
 
-    return order
+    // Normalize status in response
+    return {
+      ...response.data,
+      status: this.normalizeStatus(response.data.status)
+    }
   }
 
   async assignMechanic(orderId: string, mechanicIds: string[]): Promise<ServiceOrder> {
-    await new Promise(resolve => setTimeout(resolve, 300))
+    const response = await apiClient.put<ApiResponse<ServiceOrder>>(`/orders/${orderId}`, {
+      mechanic_id: mechanicIds[0]
+    })
 
-    const order = getOrderById(orderId)
-    if (!order) {
-      throw new Error('Order not found')
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to assign mechanic')
     }
 
-    order.mechanic_id = mechanicIds[0]
-    return order
+    // Normalize status in response
+    return {
+      ...response.data,
+      status: this.normalizeStatus(response.data.status)
+    }
+  }
+
+  async updateOrder(orderId: string, data: Partial<CreateOrderForm> & { status?: string; mechanic_id?: string; diagnosis?: string }): Promise<ServiceOrder> {
+    // Denormalize status if present
+    const apiData = {
+      ...data,
+      status: data.status ? this.denormalizeStatus(data.status) : undefined
+    }
+
+    const response = await apiClient.put<ApiResponse<ServiceOrder>>(`/orders/${orderId}`, apiData)
+
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to update order')
+    }
+
+    // Normalize status in response
+    return {
+      ...response.data,
+      status: this.normalizeStatus(response.data.status)
+    }
   }
 
   async deleteOrder(orderId: string): Promise<void> {
-    await new Promise(resolve => setTimeout(resolve, 300))
+    const response = await apiClient.delete<ApiResponse<void>>(`/orders/${orderId}`)
 
-    const index = mockServiceOrders.findIndex(o => o.order_id === orderId)
-    if (index === -1) {
-      throw new Error('Order not found')
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to delete order')
     }
-
-    mockServiceOrders.splice(index, 1)
   }
 
   async getOrdersByVehicle(plateNumber: string): Promise<ServiceOrder[]> {
-    await new Promise(resolve => setTimeout(resolve, 300))
-    return getOrderByVehicle(plateNumber)
+    // This would need to be implemented in backend or filter on frontend
+    const orders = await this.getAllOrders()
+    // Filter by plate number - this is a workaround until backend supports it
+    return orders.filter(o => o.vehicle?.plate_number === plateNumber)
   }
 
   // Get orders grouped by status for Kanban board
   async getKanbanData(): Promise<Record<ServiceStatus, ServiceOrder[]>> {
-    await new Promise(resolve => setTimeout(resolve, 300))
+    const allOrders = await this.getAllOrders()
 
     return {
-      [ServiceStatus.MENUNGGU_ANTRIAN]: getOrdersByStatus(ServiceStatus.MENUNGGU_ANTRIAN),
-      [ServiceStatus.PENGECEKAN]: getOrdersByStatus(ServiceStatus.PENGECEKAN),
-      [ServiceStatus.DIKERJAKAN]: getOrdersByStatus(ServiceStatus.DIKERJAKAN),
-      [ServiceStatus.KONFIRMASI_PART]: getOrdersByStatus(ServiceStatus.KONFIRMASI_PART),
-      [ServiceStatus.MENUNGGU_PART]: getOrdersByStatus(ServiceStatus.MENUNGGU_PART),
-      [ServiceStatus.SELESAI]: getOrdersByStatus(ServiceStatus.SELESAI)
+      [ServiceStatus.MENUNGGU_ANTRIAN]: allOrders.filter(o => o.status === ServiceStatus.MENUNGGU_ANTRIAN),
+      [ServiceStatus.PENGECEKAN]: allOrders.filter(o => o.status === ServiceStatus.PENGECEKAN),
+      [ServiceStatus.DIKERJAKAN]: allOrders.filter(o => o.status === ServiceStatus.DIKERJAKAN),
+      [ServiceStatus.KONFIRMASI_PART]: allOrders.filter(o => o.status === ServiceStatus.KONFIRMASI_PART),
+      [ServiceStatus.MENUNGGU_PART]: allOrders.filter(o => o.status === ServiceStatus.MENUNGGU_PART),
+      [ServiceStatus.SELESAI]: allOrders.filter(o => o.status === ServiceStatus.SELESAI),
+      [ServiceStatus.BATAL]: allOrders.filter(o => o.status === ServiceStatus.BATAL)
     }
   }
 }

@@ -22,6 +22,13 @@ export function MainLayout({ userName, userRole }: MainLayoutProps) {
         userRole={userRole as any}
       />
 
+      {/* Mobile sidebar overlay */}
+      <div
+        className={`sidebar-overlay ${sidebarOpen ? 'visible' : ''}`}
+        onClick={closeSidebar}
+        aria-hidden="true"
+      />
+
       <div className="main-content">
         <Header
           onMenuClick={toggleSidebar}
@@ -33,21 +40,6 @@ export function MainLayout({ userName, userRole }: MainLayoutProps) {
           <Outlet />
         </main>
       </div>
-
-      {/* Mobile overlay */}
-      {sidebarOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            zIndex: 1020,
-            display: 'none'
-          }}
-          className="md:hidden"
-          onClick={closeSidebar}
-        />
-      )}
     </div>
   )
 }

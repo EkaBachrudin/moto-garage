@@ -106,11 +106,12 @@ CREATE TABLE IF NOT EXISTS products (
 -- 10. ServiceOrders Table
 CREATE TABLE IF NOT EXISTS service_orders (
   order_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  order_code VARCHAR(20) UNIQUE NOT NULL,
   customer_id UUID NOT NULL REFERENCES customers(customer_id) ON DELETE CASCADE,
   vehicle_id UUID NOT NULL REFERENCES vehicles(vehicle_id) ON DELETE CASCADE,
   mechanic_id UUID REFERENCES users(user_id) ON DELETE SET NULL,
   created_by UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-  status VARCHAR(20) DEFAULT 'Antri' CHECK (status IN ('Antri', 'Pengecekan', 'Dikerjakan', 'Konfirmasi Part', 'Menunggu Part', 'Selesai')),
+  status VARCHAR(20) DEFAULT 'Antri' CHECK (status IN ('Antri', 'Pengecekan', 'Dikerjakan', 'Konfirmasi Part', 'Menunggu Part', 'Selesai', 'Batal')),
   entry_type VARCHAR(10) DEFAULT 'Walk-In' CHECK (entry_type IN ('Booking', 'Walk-In')),
   complaint TEXT,
   diagnosis TEXT,

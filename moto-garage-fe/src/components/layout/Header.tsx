@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Menu, Settings, LogOut, ChevronDown, Bell, Search } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Menu, Settings, LogOut, ChevronDown, Bell } from 'lucide-react'
 
 export interface HeaderProps {
   onMenuClick?: () => void
@@ -9,36 +9,41 @@ export interface HeaderProps {
 
 export function Header({ onMenuClick, userName = 'User', userRole = 'Admin' }: HeaderProps) {
   const [showDropdown, setShowDropdown] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const initials = userName.charAt(0).toUpperCase()
+
+  // Check if screen is mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   return (
     <header className="top-header">
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <button
-          type="button"
-          onClick={onMenuClick}
-          className="menu-button"
-          aria-label="Toggle menu"
-        >
-          <Menu size={24} strokeWidth={2} />
-        </button>
+      <div className="header-left">
+        {/* Hamburger menu only for mobile */}
+        {isMobile && (
+          <button
+            type="button"
+            onClick={onMenuClick}
+            className="menu-button"
+            aria-label="Toggle menu"
+          >
+            <Menu size={24} strokeWidth={2} />
+          </button>
+        )}
         <div className="header-title-group">
-          <h1 className="header-title">Sistem Manajemen Bengkel</h1>
-          <span className="header-subtitle">Moto Garage Management System</span>
+          <h1 className="header-title">Moto Garage</h1>
         </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-        {/* Search Bar */}
-        <div className="header-search">
-          <Search size={18} className="header-search-icon" />
-          <input
-            type="text"
-            placeholder="Cari..."
-            className="header-search-input"
-          />
-        </div>
-
+      <div className="header-right">
         {/* Notifications */}
         <button
           type="button"
@@ -50,11 +55,13 @@ export function Header({ onMenuClick, userName = 'User', userRole = 'Admin' }: H
         </button>
 
         {/* User Menu */}
-        <div style={{ position: 'relative' }}>
+        <div className="user-menu-wrapper">
           <button
             type="button"
             onClick={() => setShowDropdown(!showDropdown)}
             className="user-menu-button"
+            aria-expanded={showDropdown}
+            aria-haspopup="true"
           >
             <div className="user-avatar">
               {initials}

@@ -2,6 +2,8 @@ export { apiClient, mockDelay } from './api'
 
 export { authService } from './authService'
 
+export { userService } from './userService'
+
 export { orderService } from './orderService'
 
 export { customerService } from './customerService'

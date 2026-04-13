@@ -4,7 +4,7 @@ import type { User, LoginRequest } from '@/types'
 import { authService } from '@/services/authService'
 import { apiClient } from '@/services/api'
 
-interface AuthState {
+export interface AuthState {
   user: User | null
   csrfToken: string | null
   isAuthenticated: boolean

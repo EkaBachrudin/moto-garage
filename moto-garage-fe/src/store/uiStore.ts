@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-interface ModalState {
+export interface ModalState {
   isOpen: boolean
   title?: string
   content?: React.ReactNode
@@ -8,14 +8,14 @@ interface ModalState {
   onClose?: () => void
 }
 
-interface ToastState {
+export interface ToastState {
   id: string
   message: string
   type?: 'success' | 'error' | 'warning' | 'info'
   duration?: number
 }
 
-interface UIState {
+export type UIState = {
   // Loading
   isLoading: boolean
   loadingText?: string

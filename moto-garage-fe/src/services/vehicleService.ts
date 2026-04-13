@@ -1,75 +1,79 @@
-import { mockVehicles, findVehicleByPlate, getVehiclesByCustomer } from '@/mocks'
+import { apiClient } from './api'
 import type { Vehicle, CreateVehicleForm } from '@/types'
 
+interface ApiResponse<T> {
+  success: boolean
+  message?: string
+  data: T
+  error_code?: string
+}
+
 class VehicleService {
-  async getAllVehicles(): Promise<Vehicle[]> {
-    await new Promise(resolve => setTimeout(resolve, 300))
-    return [...mockVehicles]
+  async getAllVehicles(customerId?: string): Promise<Vehicle[]> {
+    const params = customerId ? { customer_id: customerId } : undefined
+    const response = await apiClient.get<ApiResponse<Vehicle[]>>('/vehicles', params)
+
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to fetch vehicles')
+    }
+
+    return response.data
   }
 
   async getVehicleById(vehicleId: string): Promise<Vehicle> {
-    await new Promise(resolve => setTimeout(resolve, 200))
+    const response = await apiClient.get<ApiResponse<Vehicle>>(`/vehicles/${vehicleId}`)
 
-    const vehicle = mockVehicles.find(v => v.vehicle_id === vehicleId)
-    if (!vehicle) {
-      throw new Error('Vehicle not found')
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to fetch vehicle')
     }
-    return vehicle
+
+    return response.data
   }
 
   async findVehicleByPlate(plateNumber: string): Promise<Vehicle | null> {
-    await new Promise(resolve => setTimeout(resolve, 200))
+    try {
+      const response = await apiClient.get<ApiResponse<Vehicle>>(`/vehicles/plate/${plateNumber}`)
 
-    const vehicle = findVehicleByPlate(plateNumber)
-    return vehicle || null
+      if (!response.success) {
+        return null
+      }
+
+      return response.data
+    } catch {
+      return null
+    }
   }
 
   async getVehiclesByCustomer(customerId: string): Promise<Vehicle[]> {
-    await new Promise(resolve => setTimeout(resolve, 300))
-    return getVehiclesByCustomer(customerId)
+    return this.getAllVehicles(customerId)
   }
 
   async createVehicle(data: CreateVehicleForm): Promise<Vehicle> {
-    await new Promise(resolve => setTimeout(resolve, 500))
+    const response = await apiClient.post<ApiResponse<Vehicle>>('/vehicles', data)
 
-    // Check if plate number already exists
-    const existingVehicle = findVehicleByPlate(data.plate_number)
-    if (existingVehicle) {
-      throw new Error('Vehicle with this plate number already exists')
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to create vehicle')
     }
 
-    const newVehicle: Vehicle = {
-      vehicle_id: 'v' + (mockVehicles.length + 1),
-      customer_id: data.customer_id,
-      plate_number: data.plate_number,
-      brand_type: data.brand_type
-    }
-
-    mockVehicles.push(newVehicle)
-    return newVehicle
+    return response.data
   }
 
   async updateVehicle(vehicleId: string, data: Partial<CreateVehicleForm>): Promise<Vehicle> {
-    await new Promise(resolve => setTimeout(resolve, 400))
+    const response = await apiClient.put<ApiResponse<Vehicle>>(`/vehicles/${vehicleId}`, data)
 
-    const vehicle = mockVehicles.find(v => v.vehicle_id === vehicleId)
-    if (!vehicle) {
-      throw new Error('Vehicle not found')
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to update vehicle')
     }
 
-    Object.assign(vehicle, data)
-    return vehicle
+    return response.data
   }
 
   async deleteVehicle(vehicleId: string): Promise<void> {
-    await new Promise(resolve => setTimeout(resolve, 300))
+    const response = await apiClient.delete<ApiResponse<void>>(`/vehicles/${vehicleId}`)
 
-    const index = mockVehicles.findIndex(v => v.vehicle_id === vehicleId)
-    if (index === -1) {
-      throw new Error('Vehicle not found')
+    if (!response.success) {
+      throw new Error(response.message || 'Failed to delete vehicle')
     }
-
-    mockVehicles.splice(index, 1)
   }
 }
 
