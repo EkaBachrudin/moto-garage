@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { orderService } from '@/services'
 import type { ServiceOrder } from '@/types'
 import { ServiceStatus } from '@/types'
-import { StatusBadge, Card, Modal, Textarea, Button } from '@/components/ui'
+import { StatusBadge, Card, Modal, Textarea, Button, Select } from '@/components/ui'
 
 export function MechanicView() {
   const navigate = useNavigate()

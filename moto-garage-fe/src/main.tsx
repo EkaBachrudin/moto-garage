@@ -7,16 +7,16 @@ import '@/styles/components.css'
 import '@/styles/status.css'
 import '@/styles/dashboard.css'
 import Login from './pages/Login'
-import { MainLayout } from './components/layout'
-import { ProtectedRoute, RoleRoute } from './components/ProtectedRoute'
+import { LayoutRoute, RoleRoute } from './components/ProtectedRoute'
 import { Dashboard } from './pages/Dashboard'
 import { ServiceOrdersList, CreateOrder, OrderDetail } from './pages/ServiceOrders'
 import { CustomersList, CreateCustomer, CustomerDetail } from './pages/Customers'
 import { InventoryList, CreateProduct } from './pages/Inventory'
 import { Reports } from './pages/Reports'
 import { MechanicView } from './pages/Mechanic'
+import { MechanicsList, CreateMechanic, EditMechanic } from './pages/Mechanics'
 import { PaymentsList, CreatePayment } from './pages/Payments'
-import { useAuthStore } from './store'
+import { useAuthStore, saveRedirectUrl } from './store'
 import { UserRole } from './types'
 
 // Access Denied Component
@@ -75,8 +75,9 @@ function App() {
       try {
         await useAuthStore.getState().refreshSession()
       } catch {
-        // Redirect to login if refresh fails
+        // Save current URL before redirecting to login
         if (location.pathname !== '/login') {
+          saveRedirectUrl(window.location.pathname + window.location.search)
           window.location.href = '/login'
         }
       } finally {
@@ -107,7 +108,7 @@ function App() {
       />
 
       {/* Protected routes - Base layout */}
-      <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+      <Route element={<LayoutRoute />}>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
         {/* Dashboard - All roles */}
@@ -203,6 +204,32 @@ function App() {
           element={
             <RoleRoute allowedRoles={[UserRole.MEKANIK]}>
               <MechanicView />
+            </RoleRoute>
+          }
+        />
+
+        {/* Mechanics Management - Admin only */}
+        <Route
+          path="/mechanics"
+          element={
+            <RoleRoute allowedRoles={[UserRole.ADMIN]}>
+              <MechanicsList />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/mechanics/create"
+          element={
+            <RoleRoute allowedRoles={[UserRole.ADMIN]}>
+              <CreateMechanic />
+            </RoleRoute>
+          }
+        />
+        <Route
+          path="/mechanics/:id/edit"
+          element={
+            <RoleRoute allowedRoles={[UserRole.ADMIN]}>
+              <EditMechanic />
             </RoleRoute>
           }
         />

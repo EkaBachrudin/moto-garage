@@ -30,7 +30,7 @@ export const getOrders = async (req: Request, res: Response) => {
              so.entry_date, so.completion_date,
              c.customer_id as cust_id, c.full_name as customer_name, c.phone as customer_phone,
              v.vehicle_id as veh_id, v.plate_number, v.brand_type,
-             m.user_id as mech_id, m.full_name as mechanic_name
+             m.user_id as mech_id, m.full_name as mechanic_name, m.commission_rate as mechanic_commission
       FROM service_orders so
       LEFT JOIN customers c ON so.customer_id = c.customer_id
       LEFT JOIN vehicles v ON so.vehicle_id = v.vehicle_id
@@ -87,6 +87,7 @@ export const getOrders = async (req: Request, res: Response) => {
       mechanic: row.mechanic_name ? {
         user_id: row.mech_id,
         full_name: row.mechanic_name,
+        commission_rate: row.mechanic_commission || 0,
       } : null,
     }));
 
@@ -117,7 +118,7 @@ export const getOrderById = async (req: Request, res: Response) => {
               so.entry_date, so.completion_date,
               c.customer_id as cust_id, c.full_name as customer_name, c.phone as customer_phone, c.address as customer_address,
               v.vehicle_id as veh_id, v.plate_number, v.brand_type,
-              m.user_id as mech_id, m.full_name as mechanic_name, m.phone as mechanic_phone
+              m.user_id as mech_id, m.full_name as mechanic_name, m.phone as mechanic_phone, m.commission_rate as mechanic_commission
        FROM service_orders so
        LEFT JOIN customers c ON so.customer_id = c.customer_id
        LEFT JOIN vehicles v ON so.vehicle_id = v.vehicle_id
@@ -167,6 +168,7 @@ export const getOrderById = async (req: Request, res: Response) => {
         user_id: row.mech_id,
         full_name: row.mechanic_name,
         phone: row.mechanic_phone,
+        commission_rate: row.mechanic_commission || 0,
       } : null,
     };
 

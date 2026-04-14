@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Wrench, Mail, Lock, AlertCircle, ArrowRight } from 'lucide-react'
 import { useAuthStore } from '@/store'
 import './Login.css'
@@ -11,8 +11,6 @@ interface LoginFormData {
 }
 
 function Login() {
-  const navigate = useNavigate()
-  const location = useLocation()
   const { login, isLoading, error, clearError } = useAuthStore()
 
   const [formData, setFormData] = useState<LoginFormData>({
@@ -20,15 +18,14 @@ function Login() {
     password: ''
   })
 
-  const from = (location.state as any)?.from?.pathname || '/dashboard'
-
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     clearError()
 
     try {
       await login(formData)
-      navigate(from, { replace: true })
+      // Note: Navigation is handled by authStore's login action
+      // It will redirect to the saved URL or dashboard
     } catch (err) {
       // Error is handled by the store
       console.error('Login failed:', err)

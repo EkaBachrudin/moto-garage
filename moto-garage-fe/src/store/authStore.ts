@@ -20,6 +20,22 @@ export interface AuthState {
   checkAuth: () => Promise<boolean>
 }
 
+// Constants
+const REDIRECT_STORAGE_KEY = 'auth_redirect_url'
+
+// Helper functions for redirect URL management
+export const saveRedirectUrl = (url: string) => {
+  sessionStorage.setItem(REDIRECT_STORAGE_KEY, url)
+}
+
+export const getRedirectUrl = (): string | null => {
+  return sessionStorage.getItem(REDIRECT_STORAGE_KEY)
+}
+
+export const clearRedirectUrl = () => {
+  sessionStorage.removeItem(REDIRECT_STORAGE_KEY)
+}
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
@@ -41,6 +57,13 @@ export const useAuthStore = create<AuthState>()(
             isLoading: false,
             error: null,
           })
+
+          // Handle redirect after successful login
+          const redirectUrl = getRedirectUrl()
+          if (redirectUrl) {
+            clearRedirectUrl()
+            window.location.href = redirectUrl
+          }
         } catch (error: any) {
           set({
             error: error.message || 'Login failed',

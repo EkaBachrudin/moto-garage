@@ -1,14 +1,40 @@
-import { Navigate, useLocation } from 'react-router-dom'
+import { Navigate, useLocation, Outlet } from 'react-router-dom'
 import { useAuthStore } from '@/store'
 import { useCanAccessRoute } from '@/hooks'
 import type { UserRole } from '@/types'
+import { MainLayout } from './layout'
 
 export interface ProtectedRouteProps {
-  children: React.ReactNode
+  children?: React.ReactNode
   allowedRoles?: UserRole[]
   fallback?: React.ReactNode
 }
 
+// Component for providing MainLayout with user context (used at top level)
+export function LayoutRoute({ children }: { children?: React.ReactNode }) {
+  const { isAuthenticated, isLoading, user } = useAuthStore()
+  const location = useLocation()
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="spinner" />
+      </div>
+    )
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />
+  }
+
+  return (
+    <MainLayout userName={user?.full_name} userRole={user?.role?.name}>
+      {children || <Outlet />}
+    </MainLayout>
+  )
+}
+
+// Component for role-based access control (used for specific routes)
 export function ProtectedRoute({
   children,
   allowedRoles,
@@ -18,7 +44,6 @@ export function ProtectedRoute({
   const canAccess = useCanAccessRoute(allowedRoles)
   const location = useLocation()
 
-  // Show loading state while checking authentication
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -27,19 +52,15 @@ export function ProtectedRoute({
     )
   }
 
-  // Redirect to login if not authenticated
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
-  // Check role-based access
   if (allowedRoles && allowedRoles.length > 0 && !canAccess) {
-    // Show fallback if provided
     if (fallback) {
       return <>{fallback}</>
     }
 
-    // Redirect to dashboard with access denied message
     return (
       <Navigate
         to="/dashboard"

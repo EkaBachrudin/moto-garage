@@ -10,7 +10,8 @@ import {
   UserCog,
   LogOut,
   Menu,
-  X
+  X,
+  ClipboardCheck
 } from 'lucide-react'
 
 export interface MenuItem {
@@ -24,10 +25,11 @@ const menuItems: MenuItem[] = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/orders', label: 'Servis', icon: Wrench },
   { path: '/customers', label: 'Pelanggan', icon: Users },
+  { path: '/mechanics', label: 'Mekanik', icon: UserCog, roles: [UserRole.ADMIN] },
   { path: '/inventory', label: 'Inventaris', icon: Package },
   { path: '/payments', label: 'Pembayaran', icon: CreditCard },
   { path: '/reports', label: 'Laporan', icon: BarChart3, roles: [UserRole.ADMIN, UserRole.KASIR] },
-  { path: '/mechanic', label: 'Tugas Saya', icon: UserCog, roles: [UserRole.MEKANIK] },
+  { path: '/mechanic', label: 'Tugas Saya', icon: ClipboardCheck, roles: [UserRole.MEKANIK] },
 ]
 
 export interface SidebarProps {

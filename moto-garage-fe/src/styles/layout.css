@@ -1081,3 +1081,80 @@
     min-width: 180px;
   }
 }
+
+/* ==================== Mechanic Sidebar ==================== */
+
+.mechanic-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 280px;
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 50;
+  overflow: hidden;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Desktop: mechanic sidebar always visible */
+@media (min-width: 1024px) {
+  .mechanic-sidebar {
+    transform: translateX(0);
+  }
+}
+
+/* Mobile & Tablet: mechanic sidebar hidden by default */
+@media (max-width: 1023px) {
+  .mechanic-sidebar {
+    transform: translateX(-100%);
+  }
+
+  .mechanic-sidebar.open {
+    transform: translateX(0);
+  }
+}
+
+/* Mobile menu toggle button */
+.mobile-menu-toggle {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .mobile-menu-toggle {
+    display: block;
+  }
+}
+
+/* Mechanic sidebar navigation items */
+.mechanic-sidebar a {
+  position: relative;
+  overflow: hidden;
+}
+
+.mechanic-sidebar a::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2) 0%, rgba(217, 119, 6, 0.1) 100%);
+  opacity: 0;
+  transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+}
+
+.mechanic-sidebar a:hover::before {
+  opacity: 1;
+}
+
+/* Mechanic sidebar overlay for mobile */
+.mechanic-sidebar-overlay {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .mechanic-sidebar-overlay {
+    display: block;
+  }
+}
